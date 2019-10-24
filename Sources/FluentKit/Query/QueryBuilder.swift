@@ -432,6 +432,41 @@ public final class QueryBuilder<Model>
         return self
     }
 
+    // MARK: Group By
+
+    public func groupBy<Field>(_ field: KeyPath<Model, Field>) -> Self
+        where Field: FieldRepresentable
+    {
+        return self.groupBy(Model.self, Model.key(for: field), alias: nil)
+    }
+    
+    public func groupBy<Joined, Field>(_ field: KeyPath<Joined, Field>, alias: String? = nil) -> Self
+        where Joined: FluentKit.Model, Field: FieldRepresentable
+    {
+        return self.groupBy(Joined.self, Joined.key(for: field), alias: alias)
+    }
+
+    public func groupBy(_ field: String) -> Self {
+        return self.groupBy(Model.self, field, alias: nil)
+    }
+
+    public func groupBy<Joined>(
+        _ model: Joined.Type,
+        _ field: String,
+        alias: String? = nil
+    ) -> Self
+        where Joined: FluentKit.Model
+    {
+        self.query.groupBys.append(
+            .groupBy(field: .field(
+                path: [field],
+                schema: alias ?? Joined.schema,
+                alias: nil
+            ))
+        )
+        return self
+    }
+
     // MARK: Nested
 
     public func filter<Value, NestedValue>(

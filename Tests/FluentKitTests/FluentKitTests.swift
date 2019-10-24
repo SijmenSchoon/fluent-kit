@@ -5,6 +5,13 @@ import Foundation
 import FluentSQL
 
 final class FluentKitTests: XCTestCase {
+    func getDB() -> (DummyDatabaseForTestSQLSerializer, Database) {
+        let dummy = DummyDatabaseForTestSQLSerializer()
+        let dbs = Databases()
+        dbs.add(dummy, as: .init(string: "dummy"), isDefault: true)
+        return (dummy, dbs.default())
+    }
+
     func testMigrationLogNames() throws {
         XCTAssertEqual(MigrationLog.key(for: \.$id), "id")
         XCTAssertEqual(MigrationLog.key(for: \.$name), "name")
@@ -23,11 +30,8 @@ final class FluentKitTests: XCTestCase {
     }
 
     func testGalaxyPlanetSorts() throws {
-        let dummy = DummyDatabaseForTestSQLSerializer()
-        let dbs = Databases()
-        dbs.add(dummy, as: .init(string: "dummy"), isDefault: true)
-        let db = dbs.default()
-    
+        let (dummy, db) = getDB()
+
         _ = try Planet.query(on: db).sort(\.$name, .descending).all().wait()
         XCTAssertEqual(dummy.sqlSerializers.count, 1)
         XCTAssertEqual(dummy.sqlSerializers.first?.sql.contains(#"ORDER BY "planets"."name" DESC"#), true)
@@ -60,12 +64,19 @@ final class FluentKitTests: XCTestCase {
     }
 
     func testSQLSchemaCustom() throws {
-        let dummy = DummyDatabaseForTestSQLSerializer()
-        let dbs = Databases()
-        dbs.add(dummy, as: .init(string: "dummy"), isDefault: true)
-        let db = dbs.default()
-        
+        let (dummy, db) = getDB()
         try db.schema("foo").field(.custom("INDEX i_foo (foo)")).update().wait()
         print(dummy.sqlSerializers)
     }
+
+    func testGroupBy() throws {
+        let (dummy, db) = getDB()
+        _ = try Planet.query(on: db).groupBy(\.$name).all().wait()
+        XCTAssertEqual(dummy.sqlSerializers.count, 1)
+        XCTAssertEqual(
+            dummy.sqlSerializers.first?.sql, 
+            #"SELECT "planets"."id", "planets"."name", "planets"."galaxy_id" FROM "planets" GROUP BY "planets"."name""#
+        )
+    }
+
 }

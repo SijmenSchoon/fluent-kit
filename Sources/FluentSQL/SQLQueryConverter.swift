@@ -45,6 +45,8 @@ public struct SQLQueryConverter {
         select.predicate = self.filters(query.filters)
         select.joins = query.joins.map(self.join)
         select.orderBy = query.sorts.map(self.sort)
+        select.groupBy = query.groupBys.map(self.groupBy)
+
         if let limit = query.limits.first {
             switch limit {
             case .count(let count):
@@ -103,7 +105,16 @@ public struct SQLQueryConverter {
             return custom(any)
         }
     }
-    
+
+    private func groupBy(_ groupBy: DatabaseQuery.GroupBy) -> SQLExpression {
+        switch groupBy {
+        case .groupBy(let field):
+            return self.field(field)
+        case .custom(let any):
+            return custom(any)
+        }
+    }
+
     private func join(_ join: DatabaseQuery.Join) -> SQLExpression {
         switch join {
         case .custom(let any):

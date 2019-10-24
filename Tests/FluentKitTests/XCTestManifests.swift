@@ -9,6 +9,7 @@ extension FluentKitTests {
         ("testGalaxyPlanetNames", testGalaxyPlanetNames),
         ("testGalaxyPlanetSorts", testGalaxyPlanetSorts),
         ("testMigrationLogNames", testMigrationLogNames),
+        ("testGroupBy", testGroupBy),
     ]
 }
 

@@ -157,6 +157,11 @@ public struct DatabaseQuery: CustomStringConvertible {
         case custom(Any)
     }
 
+    public enum GroupBy {
+        case groupBy(field: Field)
+        case custom(Any)
+    }
+
     public enum Sort {
         public enum Direction {
             case ascending
@@ -183,6 +188,7 @@ public struct DatabaseQuery: CustomStringConvertible {
     public var filters: [Filter]
     public var input: [[Value]]
     public var joins: [Join]
+    public var groupBys: [GroupBy]
     public var sorts: [Sort]
     public var limits: [Limit]
     public var offsets: [Offset]
@@ -209,6 +215,7 @@ public struct DatabaseQuery: CustomStringConvertible {
         self.filters = []
         self.input = []
         self.joins = []
+        self.groupBys = []
         self.sorts = []
         self.limits = []
         self.offsets = []
